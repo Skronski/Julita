@@ -111,6 +111,9 @@ h1 {
   <audio id="voice" src="audio/voice.mp3" preload="auto" playsinline></audio>
 </div>
 
+<!-- Podłączenie config.js z numerem telefonu -->
+<script src="config.js"></script>
+
 <script>
 const yes = document.getElementById("yes");
 const no = document.getElementById("no");
@@ -118,13 +121,13 @@ const msg = document.getElementById("message");
 const voice = document.getElementById("voice");
 let scale = 1;
 
-// Funkcja powiększająca TAK
+// Powiększanie TAK
 function growYes() {
   scale += 0.15;
   yes.style.transform = `scale(${scale})`;
 }
 
-// Funkcja ucieczki NIE
+// Ucieczka NIE
 function escapeNo() {
   const x = Math.random() * 120 - 60;
   const y = Math.random() * 80 - 40;
@@ -139,16 +142,22 @@ function escapeNo() {
   });
 });
 
-// TAK: konfetti + wiadomość + audio
+// TAK: konfetti + wiadomość + audio + dialer
 yes.addEventListener("click", () => {
   launchConfetti();
   msg.classList.add("show");
-  // reset audio, żeby działało na mobile
+
+  // Odtwarzanie audio
   voice.currentTime = 0;
   voice.play().catch(err => console.log("Błąd audio:", err));
+
+  // Wywołanie dialera
+  if (typeof PHONE_NUMBER !== "undefined") {
+    window.location.href = `tel:${PHONE_NUMBER}`;
+  }
 });
 
-// Funkcja konfetti
+// Konfetti
 function launchConfetti() {
   for (let i = 0; i < 90; i++) {
     const c = document.createElement("div");
