@@ -1,158 +1,165 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pytanie</title>
-
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle at top, #134e34, #0b2e1a);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #e7f5ee;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-      transition: opacity 1.5s ease;
-    }
-
-    body.fade-out {
-      opacity: 0;
-    }
-
-    .card {
-      text-align: center;
-      padding: 40px 20px;
-      max-width: 90%;
-    }
-
-    h1 {
-      font-weight: 300;
-      margin-bottom: 30px;
-    }
-
-    .buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      position: relative;
-    }
-
-    .btn-img {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid #1f6f4a;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      touch-action: manipulation;
-    }
-
-    .btn-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .confetti {
-      position: fixed;
-      width: 8px;
-      height: 8px;
-      background: #9be7c4;
-      top: -10px;
-      animation: fall 3s linear forwards;
-    }
-
-    @keyframes fall {
-      to {
-        transform: translateY(110vh) rotate(720deg);
-        opacity: 0;
-      }
-    }
-
-    .message {
-      font-size: 22px;
-      margin-top: 30px;
-      opacity: 0;
-      transition: opacity 1s ease;
-    }
-
-    .message.show {
-      opacity: 1;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Czy zostaniesz moim świadkiem?</title>
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  background: radial-gradient(circle at top, #134e34, #0b2e1a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  color: #e7f5ee;
+}
+.card {
+  text-align: center;
+  padding: 30px 20px;
+  max-width: 90%;
+}
+h1 {
+  font-weight: 300;
+  margin-bottom: 30px;
+}
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  position: relative;
+  flex-wrap: wrap;
+}
+.btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.btn-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #1f6f4a;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  touch-action: manipulation;
+}
+.btn-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.label {
+  font-size: 16px;
+  opacity: 0.85;
+  letter-spacing: 1px;
+}
+.message {
+  font-size: 22px;
+  margin-top: 30px;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+.message.show {
+  opacity: 1;
+}
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: #9be7c4;
+  top: -10px;
+  animation: fall 3s linear forwards;
+}
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+</style>
 </head>
 
 <body>
+<div class="card">
+  <h1>Czy zostaniesz moim świadkiem?</h1>
 
-  <div class="card">
-    <h1>Czy zostaniesz moim świadkiem?</h1>
-
-    <div class="buttons">
+  <div class="buttons">
+    <div class="btn-wrapper" id="yesWrapper">
       <div id="yes" class="btn-img">
         <img src="images/yes.jpg" alt="Tak">
       </div>
+      <div class="label">TAK</div>
+    </div>
 
+    <div class="btn-wrapper" id="noWrapper">
       <div id="no" class="btn-img">
         <img src="images/no.jpg" alt="Nie">
       </div>
-    </div>
-
-    <div id="message" class="message">
-      Wiedziałem, że powiesz tak 🤍<br>
-      Dziękuję. To dla mnie bardzo ważne.
+      <div class="label">NIE</div>
     </div>
   </div>
 
+  <div id="message" class="message">
+    Wiedziałem 🤍 Dziękuję!
+  </div>
+
+  <audio id="voice" src="audio/voice.mp3" preload="auto" playsinline></audio>
+</div>
+
 <script>
-  const yes = document.getElementById("yes");
-  const no = document.getElementById("no");
-  const msg = document.getElementById("message");
-  let scale = 1;
+const yes = document.getElementById("yes");
+const no = document.getElementById("no");
+const msg = document.getElementById("message");
+const voice = document.getElementById("voice");
+let scale = 1;
 
-  function growYes() {
-    scale += 0.15;
-    yes.style.transform = `scale(${scale})`;
-  }
+// Funkcja powiększająca TAK
+function growYes() {
+  scale += 0.15;
+  yes.style.transform = `scale(${scale})`;
+}
 
-  function moveNo() {
-    const x = Math.random() * 100 - 50;
-    const y = Math.random() * 60 - 30;
-    no.style.transform = `translate(${x}px, ${y}px)`;
-  }
+// Funkcja ucieczki NIE
+function escapeNo() {
+  const x = Math.random() * 120 - 60;
+  const y = Math.random() * 80 - 40;
+  no.style.transform = `translate(${x}px, ${y}px) scale(1.2)`;
+}
 
-  no.addEventListener("click", () => {
+// NIE: klik i touch -> TAK rośnie, NIE ucieka
+["click", "touchstart"].forEach(evt => {
+  no.addEventListener(evt, () => {
     growYes();
-    moveNo();
+    escapeNo();
   });
+});
 
-  no.addEventListener("touchstart", () => {
-    growYes();
-    moveNo();
-  });
+// TAK: konfetti + wiadomość + audio
+yes.addEventListener("click", () => {
+  launchConfetti();
+  msg.classList.add("show");
+  // reset audio, żeby działało na mobile
+  voice.currentTime = 0;
+  voice.play().catch(err => console.log("Błąd audio:", err));
+});
 
-  yes.addEventListener("click", () => {
-    launchConfetti();
-    msg.classList.add("show");
-    setTimeout(() => document.body.classList.add("fade-out"), 2500);
-  });
-
-  function launchConfetti() {
-    for (let i = 0; i < 100; i++) {
-      const c = document.createElement("div");
-      c.className = "confetti";
-      c.style.left = Math.random() * 100 + "vw";
-      c.style.background = Math.random() > 0.5 ? "#9be7c4" : "#3fa77a";
-      c.style.animationDelay = Math.random() + "s";
-      document.body.appendChild(c);
-      setTimeout(() => c.remove(), 3000);
-    }
+// Funkcja konfetti
+function launchConfetti() {
+  for (let i = 0; i < 90; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = Math.random() > 0.5 ? "#9be7c4" : "#3fa77a";
+    c.style.animationDelay = Math.random() + "s";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
   }
+}
 </script>
-
 </body>
 </html>
