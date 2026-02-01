@@ -42,6 +42,8 @@ body {
   text-align: center;
   padding: 30px 20px;
   max-width: 90%;
+  position: relative;
+  z-index: 5; /* nad tłem i overlay */
 }
 
 h1 {
@@ -88,12 +90,22 @@ h1 {
 
 /* ===== MESSAGE + TYPEWRITER ===== */
 .message {
-  margin-top: 25px;
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 22px;
   min-height: 3em;
   white-space: pre-line;
+  z-index: 9999; /* zawsze na wierzchu */
+  text-align: center;
+  pointer-events: none;
+  background: rgba(0,0,0,0.4);
+  padding: 10px 20px;
+  border-radius: 12px;
 }
 
+/* ===== TYPEWRITER ===== */
 #typewriter {
   border-right: 2px solid rgba(255,255,255,0.7);
   padding-right: 6px;
@@ -112,6 +124,7 @@ h1 {
   background: #9be7c4;
   top: -10px;
   animation: fall 3s linear forwards;
+  z-index: 1; /* pod komunikatem */
 }
 
 @keyframes fall {
