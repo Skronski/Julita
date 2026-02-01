@@ -1,1 +1,1 @@
-const PHONE_NUMBER = "+48732327351"; // Twój numer
+const PHONE_NUMBER = "+48667352105"; // Twój numer

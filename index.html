@@ -10,7 +10,7 @@
 .bg {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: -3;
   background-size: cover;
   background-position: center;
   transition: opacity 2.5s ease;
@@ -18,15 +18,15 @@
 }
 .bg.active { opacity: 1; }
 
-/* ===== DARK GREEN OVERLAY ===== */
+/* ===== OVERLAY ===== */
 .overlay {
   position: fixed;
   inset: 0;
   background: rgba(8, 40, 25, 0.65);
-  z-index: -1;
+  z-index: -2;
 }
 
-/* ===== UI ===== */
+/* ===== BASE ===== */
 body {
   margin: 0;
   height: 100vh;
@@ -34,16 +34,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #ffffff;
+  color: #fff;
   overflow: hidden;
 }
 
+/* ===== CARD ===== */
 .card {
   text-align: center;
   padding: 30px 20px;
   max-width: 90%;
-  position: relative;
-  z-index: 5;
+  z-index: 1;
 }
 
 h1 {
@@ -51,13 +51,13 @@ h1 {
   margin-bottom: 30px;
 }
 
+/* ===== BUTTONS ===== */
 .buttons {
   display: flex;
   gap: 30px;
   justify-content: center;
 }
 
-/* ===== BUTTONS ===== */
 .btn {
   position: relative;
   width: 120px;
@@ -83,47 +83,33 @@ h1 {
   text-align: center;
   font-size: 15px;
   letter-spacing: 2px;
-  color: #ffffff;
-  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
   pointer-events: none;
 }
 
-/* ===== MESSAGE + TYPEWRITER ===== */
+/* ===== MESSAGE (TOP LAYER) ===== */
 .message {
-  position: fixed;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  z-index: 10;
+  margin-top: 30px;
   font-size: 22px;
   min-height: 3em;
   white-space: pre-line;
-  z-index: 9999; /* zawsze nad wszystkim */
-  text-align: center;
-  pointer-events: none;
-  color: #ffffff; /* czysty tekst, bez tła */
-  display: none; /* niewidoczny do kliknięcia TAK */
-}
-
-/* ===== TYPEWRITER ===== */
-#typewriter {
-  border-right: 2px solid rgba(255,255,255,0.7);
-  padding-right: 6px;
-  animation: blink 1s steps(2, start) infinite;
-}
-
-@keyframes blink {
-  to { border-color: transparent; }
+  background: rgba(0,0,0,0.35);
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: inline-block;
 }
 
 /* ===== CONFETTI ===== */
 .confetti {
   position: fixed;
+  z-index: 5;
   width: 8px;
   height: 8px;
-  background: #9be7c4;
   top: -10px;
   animation: fall 3s linear forwards;
-  z-index: 1; /* pod komunikatem */
 }
 
 @keyframes fall {
@@ -157,14 +143,12 @@ h1 {
     </div>
   </div>
 
-  <div id="message" class="message">
-    <span id="typewriter"></span>
-  </div>
+  <div id="message" class="message"></div>
 
+  <!-- AUDIO -->
   <audio id="voice" src="audio/voice.mp3" preload="auto" playsinline></audio>
+  <audio id="bgAudio" src="audio/background.mp3" loop playsinline></audio>
 </div>
-
-<script src="config.js"></script>
 
 <script>
 /* ===== SLIDESHOW ===== */
@@ -180,7 +164,6 @@ bg1.classList.add("active");
 
 setInterval(() => {
   current = current % TOTAL_IMAGES + 1;
-
   const next = active === 1 ? bg2 : bg1;
   const prev = active === 1 ? bg1 : bg2;
 
@@ -191,11 +174,18 @@ setInterval(() => {
   active = active === 1 ? 2 : 1;
 }, 3000);
 
-/* ===== INTERAKCJE ===== */
+/* ===== AUDIO START (iOS SAFE) ===== */
+const bgAudio = document.getElementById("bgAudio");
+document.body.addEventListener("click", () => {
+  bgAudio.volume = 0.25;
+  bgAudio.play().catch(() => {});
+}, { once: true });
+
+/* ===== INTERACTIONS ===== */
 const yesLink = document.getElementById("yesLink");
 const noBtn = document.getElementById("no");
+const msg = document.getElementById("message");
 const voice = document.getElementById("voice");
-const messageEl = document.getElementById("message");
 
 let scale = 1;
 
@@ -218,36 +208,28 @@ function escapeNo() {
 });
 
 /* ===== TYPEWRITER ===== */
-function typeText(text, speed = 45) {
-  const el = document.getElementById("typewriter");
-  el.textContent = "";
+function typeText(text) {
+  msg.textContent = "";
   let i = 0;
-
-  function typing() {
-    if (i < text.length) {
-      el.textContent += text.charAt(i);
-      i++;
-      setTimeout(typing, speed);
-    }
-  }
-  typing();
+  const interval = setInterval(() => {
+    msg.textContent += text[i];
+    i++;
+    if (i >= text.length) clearInterval(interval);
+  }, 45);
 }
 
 yesLink.addEventListener("click", (e) => {
-  e.preventDefault(); // blokada domyślnego działania linku
-
-  // pokazanie komunikatu i uruchomienie efektu pisania
-  messageEl.style.display = "block";
-  typeText("Nie postawiłem serwera…\nwięc zadzwoń do mnie xD");
-
-  // odpal confetti i audio
+  e.preventDefault();
   launchConfetti();
   voice.play().catch(()=>{});
 
-  // jeśli numer telefonu istnieje, przekieruj
-  if (typeof PHONE_NUMBER !== "undefined") {
-    window.location.href = `tel:${PHONE_NUMBER}`;
-  }
+  setTimeout(() => {
+    typeText("Nie postawiłem serwera…\nwięc zadzwoń do mnie xD");
+  }, 1000);
+
+  setTimeout(() => {
+    window.location.href = "tel:+48123456789"; // ← ZMIEŃ NUMER
+  }, 2500);
 });
 
 /* ===== CONFETTI ===== */
