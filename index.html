@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Czy zostaniesz moim świadkiem?</title>
+<title>Czy zostaniesz moją świadkową?</title>
 
 <style>
 /* ===== BACKGROUND SLIDESHOW ===== */
@@ -13,7 +13,7 @@
   z-index: -3;
   background-size: cover;
   background-position: center;
-  transition: opacity 2.5s ease;
+  transition: opacity 1.8s ease;
   opacity: 0;
 }
 .bg.active { opacity: 1; }
@@ -31,31 +31,39 @@ body {
   margin: 0;
   height: 100vh;
   font-family: Arial, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   color: #fff;
   overflow: hidden;
 }
 
-/* ===== CARD ===== */
+/* ===== CENTER ===== */
 .card {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  padding: 30px 20px;
-  max-width: 90%;
   z-index: 1;
 }
 
-h1 {
-  font-weight: 300;
-  margin-bottom: 30px;
+/* ===== HIDDEN AT START ===== */
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
+.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ===== BUTTONS ===== */
 .buttons {
   display: flex;
   gap: 30px;
-  justify-content: center;
+  margin-top: 25px;
 }
 
 .btn {
@@ -75,7 +83,6 @@ h1 {
   object-fit: cover;
 }
 
-/* ===== LABELS ===== */
 .label {
   position: absolute;
   bottom: 6px;
@@ -88,7 +95,7 @@ h1 {
   pointer-events: none;
 }
 
-/* ===== MESSAGE (TOP LAYER) ===== */
+/* ===== MESSAGE ===== */
 .message {
   position: relative;
   z-index: 10;
@@ -129,16 +136,18 @@ h1 {
 <div class="overlay"></div>
 
 <div class="card">
-  <h1>Czy zostaniesz moim świadkiem?</h1>
 
-  <div class="buttons">
-    <a id="yesLink" href="#" class="btn">
-      <img src="images/yes.jpg" alt="Tak">
+  <!-- PYTANIE (PO 30s) -->
+  <h1 id="question" class="hidden">Czy zostaniesz moją świadkową?</h1>
+
+  <div id="buttons" class="buttons hidden">
+    <a id="yes" class="btn">
+      <img src="images/yes.jpg">
       <div class="label">TAK</div>
     </a>
 
     <div id="no" class="btn">
-      <img src="images/no.jpg" alt="Nie">
+      <img src="images/no.jpg">
       <div class="label">NIE</div>
     </div>
   </div>
@@ -146,8 +155,8 @@ h1 {
   <div id="message" class="message"></div>
 
   <!-- AUDIO -->
+  <audio id="bgAudio" src="audio/background.mp3" autoplay loop muted playsinline></audio>
   <audio id="voice" src="audio/voice.mp3" preload="auto" playsinline></audio>
-  <audio id="bgAudio" src="audio/background.mp3" loop playsinline></audio>
 </div>
 
 <script>
@@ -160,7 +169,6 @@ const bg1 = document.getElementById("bg1");
 const bg2 = document.getElementById("bg2");
 
 bg1.style.backgroundImage = "url('gallery/1.jpeg')";
-bg1.classList.add("active");
 
 setInterval(() => {
   current = current % TOTAL_IMAGES + 1;
@@ -172,18 +180,24 @@ setInterval(() => {
   prev.classList.remove("active");
 
   active = active === 1 ? 2 : 1;
-}, 3000);
+}, 1800);
 
-/* ===== AUDIO START (iOS SAFE) ===== */
+/* ===== SHOW QUESTION AFTER 30s ===== */
+setTimeout(() => {
+  document.getElementById("question").classList.add("show");
+  document.getElementById("buttons").classList.add("show");
+}, 30000);
+
+/* ===== AUDIO UNMUTE ON FIRST TOUCH ===== */
 const bgAudio = document.getElementById("bgAudio");
 document.body.addEventListener("click", () => {
-  bgAudio.volume = 0.25;
-  bgAudio.play().catch(() => {});
+  bgAudio.muted = false;
+  bgAudio.volume = 0.3;
 }, { once: true });
 
 /* ===== INTERACTIONS ===== */
-const yesLink = document.getElementById("yesLink");
-const noBtn = document.getElementById("no");
+const yes = document.getElementById("yes");
+const no = document.getElementById("no");
 const msg = document.getElementById("message");
 const voice = document.getElementById("voice");
 
@@ -191,35 +205,31 @@ let scale = 1;
 
 function growYes() {
   scale += 0.15;
-  yesLink.style.transform = `scale(${scale})`;
+  yes.style.transform = `scale(${scale})`;
 }
 
 function escapeNo() {
   const x = Math.random() * 120 - 60;
   const y = Math.random() * 80 - 40;
-  noBtn.style.transform = `translate(${x}px, ${y}px) scale(1.2)`;
+  no.style.transform = `translate(${x}px, ${y}px) scale(1.2)`;
 }
 
-["click", "touchstart"].forEach(evt => {
-  noBtn.addEventListener(evt, () => {
-    growYes();
-    escapeNo();
-  });
+no.addEventListener("click", () => {
+  growYes();
+  escapeNo();
 });
 
 /* ===== TYPEWRITER ===== */
 function typeText(text) {
   msg.textContent = "";
   let i = 0;
-  const interval = setInterval(() => {
-    msg.textContent += text[i];
-    i++;
-    if (i >= text.length) clearInterval(interval);
+  const t = setInterval(() => {
+    msg.textContent += text[i++];
+    if (i >= text.length) clearInterval(t);
   }, 45);
 }
 
-yesLink.addEventListener("click", (e) => {
-  e.preventDefault();
+yes.addEventListener("click", () => {
   launchConfetti();
   voice.play().catch(()=>{});
 
@@ -228,7 +238,7 @@ yesLink.addEventListener("click", (e) => {
   }, 1000);
 
   setTimeout(() => {
-    window.location.href = "tel:+48123456789"; // ← ZMIEŃ NUMER
+    window.location.href = "tel:+48123456789"; // ← ZMIEŃ
   }, 2500);
 });
 
