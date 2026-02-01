@@ -16,10 +16,7 @@
   transition: opacity 2.5s ease;
   opacity: 0;
 }
-
-.bg.active {
-  opacity: 1;
-}
+.bg.active { opacity: 1; }
 
 /* ===== DARK GREEN OVERLAY ===== */
 .overlay {
@@ -76,7 +73,7 @@ h1 {
   object-fit: cover;
 }
 
-/* ===== LABELS (BIAŁE, BEZ TŁA) ===== */
+/* ===== LABELS ===== */
 .label {
   position: absolute;
   bottom: 6px;
@@ -89,16 +86,22 @@ h1 {
   pointer-events: none;
 }
 
-/* ===== MESSAGE ===== */
+/* ===== MESSAGE + TYPEWRITER ===== */
 .message {
   margin-top: 25px;
   font-size: 22px;
-  opacity: 0;
-  transition: opacity 1s ease;
+  min-height: 3em;
+  white-space: pre-line;
 }
 
-.message.show {
-  opacity: 1;
+#typewriter {
+  border-right: 2px solid rgba(255,255,255,0.7);
+  padding-right: 6px;
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to { border-color: transparent; }
 }
 
 /* ===== CONFETTI ===== */
@@ -143,7 +146,7 @@ h1 {
   </div>
 
   <div id="message" class="message">
-    Wiedziałem 🤍 Dziękuję.
+    <span id="typewriter"></span>
   </div>
 
   <audio id="voice" src="audio/voice.mp3" preload="auto" playsinline></audio>
@@ -160,7 +163,6 @@ let active = 1;
 const bg1 = document.getElementById("bg1");
 const bg2 = document.getElementById("bg2");
 
-// INIT – pierwsze zdjęcie
 bg1.style.backgroundImage = "url('gallery/1.jpeg')";
 bg1.classList.add("active");
 
@@ -180,7 +182,6 @@ setInterval(() => {
 /* ===== INTERAKCJE ===== */
 const yesLink = document.getElementById("yesLink");
 const noBtn = document.getElementById("no");
-const msg = document.getElementById("message");
 const voice = document.getElementById("voice");
 
 let scale = 1;
@@ -203,10 +204,29 @@ function escapeNo() {
   });
 });
 
+/* ===== TYPEWRITER ===== */
+function typeText(text, speed = 45) {
+  const el = document.getElementById("typewriter");
+  el.textContent = "";
+  let i = 0;
+
+  function typing() {
+    if (i < text.length) {
+      el.textContent += text.charAt(i);
+      i++;
+      setTimeout(typing, speed);
+    }
+  }
+  typing();
+}
+
 yesLink.addEventListener("click", (e) => {
   launchConfetti();
-  msg.classList.add("show");
   voice.play().catch(()=>{});
+
+  setTimeout(() => {
+    typeText("Nie postawiłem serwera…\nwięc zadzwoń do mnie xD");
+  }, 1000);
 
   if (typeof PHONE_NUMBER !== "undefined") {
     yesLink.href = `tel:${PHONE_NUMBER}`;
