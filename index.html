@@ -6,16 +6,38 @@
 <title>Czy zostaniesz moim świadkiem?</title>
 
 <style>
+/* ===== BACKGROUND SLIDESHOW ===== */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 2s ease;
+  opacity: 0;
+}
+.bg.active {
+  opacity: 1;
+}
+
+/* ===== DARK GREEN OVERLAY ===== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 40, 25, 0.7);
+  z-index: -1;
+}
+
+/* ===== UI ===== */
 body {
   margin: 0;
   height: 100vh;
-  background: radial-gradient(circle at top, #134e34, #0b2e1a);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-family: Arial, sans-serif;
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   color: #e7f5ee;
+  overflow: hidden;
 }
 
 .card {
@@ -33,7 +55,6 @@ h1 {
   display: flex;
   gap: 30px;
   justify-content: center;
-  position: relative;
 }
 
 .btn {
@@ -45,7 +66,6 @@ h1 {
   border: 3px solid #1f6f4a;
   cursor: pointer;
   transition: transform 0.3s ease;
-  touch-action: manipulation;
 }
 
 .btn img {
@@ -54,30 +74,28 @@ h1 {
   object-fit: cover;
 }
 
-/* PODPIS PRZYKLEJONY DO ZDJĘCIA */
 .label {
   position: absolute;
   bottom: 0;
   width: 100%;
-  text-align: center;
   background: rgba(0,0,0,0.45);
   padding: 6px 0;
   font-size: 14px;
   letter-spacing: 1px;
 }
 
+/* ===== MESSAGE ===== */
 .message {
   margin-top: 25px;
   font-size: 22px;
   opacity: 0;
   transition: opacity 1s ease;
 }
-
 .message.show {
   opacity: 1;
 }
 
-/* konfetti */
+/* ===== CONFETTI ===== */
 .confetti {
   position: fixed;
   width: 8px;
@@ -86,7 +104,6 @@ h1 {
   top: -10px;
   animation: fall 3s linear forwards;
 }
-
 @keyframes fall {
   to {
     transform: translateY(110vh) rotate(720deg);
@@ -98,23 +115,24 @@ h1 {
 
 <body>
 
+<!-- BACKGROUND LAYERS -->
+<div id="bg1" class="bg active"></div>
+<div id="bg2" class="bg"></div>
+<div class="overlay"></div>
+
 <div class="card">
   <h1>Czy zostaniesz moim świadkiem?</h1>
 
   <div class="buttons">
-
-    <!-- TAK = PRAWDZIWY LINK TEL -->
     <a id="yesLink" href="#" class="btn">
-      <img src="images/yes.jpg" alt="Tak">
+      <img src="images/yes.jpg">
       <div class="label">TAK</div>
     </a>
 
-    <!-- NIE -->
     <div id="no" class="btn">
-      <img src="images/no.jpg" alt="Nie">
+      <img src="images/no.jpg">
       <div class="label">NIE</div>
     </div>
-
   </div>
 
   <div id="message" class="message">
@@ -124,10 +142,32 @@ h1 {
   <audio id="voice" src="audio/voice.mp3" preload="auto" playsinline></audio>
 </div>
 
-<!-- config.js (jeśli istnieje lokalnie) -->
 <script src="config.js"></script>
 
 <script>
+/* ===== SLIDESHOW ===== */
+const totalImages = 23;
+let current = 1;
+let activeBg = 1;
+
+const bg1 = document.getElementById("bg1");
+const bg2 = document.getElementById("bg2");
+
+bg1.style.backgroundImage = `url('gallery/1.jpg')`;
+
+setInterval(() => {
+  current = current % totalImages + 1;
+  const nextBg = activeBg === 1 ? bg2 : bg1;
+  const prevBg = activeBg === 1 ? bg1 : bg2;
+
+  nextBg.style.backgroundImage = `url('gallery/${current}.jpg')`;
+  nextBg.classList.add("active");
+  prevBg.classList.remove("active");
+
+  activeBg = activeBg === 1 ? 2 : 1;
+}, 6000); // zmiana co 6 sekund
+
+/* ===== INTERACTIONS ===== */
 const yesLink = document.getElementById("yesLink");
 const noBtn = document.getElementById("no");
 const msg = document.getElementById("message");
@@ -135,20 +175,17 @@ const voice = document.getElementById("voice");
 
 let scale = 1;
 
-/* powiększ TAK */
 function growYes() {
   scale += 0.15;
   yesLink.style.transform = `scale(${scale})`;
 }
 
-/* NIE ucieka */
 function escapeNo() {
   const x = Math.random() * 120 - 60;
   const y = Math.random() * 80 - 40;
   noBtn.style.transform = `translate(${x}px, ${y}px) scale(1.2)`;
 }
 
-/* NIE = TAK rośnie + NIE ucieka */
 ["click", "touchstart"].forEach(evt => {
   noBtn.addEventListener(evt, () => {
     growYes();
@@ -156,23 +193,18 @@ function escapeNo() {
   });
 });
 
-/* TAK = konfetti + audio + TEL */
 yesLink.addEventListener("click", (e) => {
   launchConfetti();
   msg.classList.add("show");
-
-  voice.currentTime = 0;
   voice.play().catch(()=>{});
 
   if (typeof PHONE_NUMBER !== "undefined") {
     yesLink.href = `tel:${PHONE_NUMBER}`;
   } else {
     e.preventDefault();
-    alert("Numer telefonu nie jest skonfigurowany.");
   }
 });
 
-/* konfetti */
 function launchConfetti() {
   for (let i = 0; i < 80; i++) {
     const c = document.createElement("div");
