@@ -43,7 +43,7 @@ body {
   padding: 30px 20px;
   max-width: 90%;
   position: relative;
-  z-index: 5; /* nad tłem i overlay */
+  z-index: 5;
 }
 
 h1 {
@@ -234,21 +234,19 @@ function typeText(text, speed = 45) {
 }
 
 yesLink.addEventListener("click", (e) => {
-  e.preventDefault(); // aby nie zmieniało href jeśli brak numeru
+  e.preventDefault(); // blokada domyślnego działania linku
 
-  // pokazanie komunikatu
+  // pokazanie komunikatu i uruchomienie efektu pisania
   messageEl.style.display = "block";
+  typeText("Nie postawiłem serwera…\nwięc zadzwoń do mnie xD");
 
+  // odpal confetti i audio
   launchConfetti();
   voice.play().catch(()=>{});
 
-  setTimeout(() => {
-    typeText("Nie postawiłem serwera…\nwięc zadzwoń do mnie xD");
-  }, 1000);
-
+  // jeśli numer telefonu istnieje, przekieruj
   if (typeof PHONE_NUMBER !== "undefined") {
-    yesLink.href = `tel:${PHONE_NUMBER}`;
-    window.location.href = yesLink.href; // wykonanie po numerze
+    window.location.href = `tel:${PHONE_NUMBER}`;
   }
 });
 
